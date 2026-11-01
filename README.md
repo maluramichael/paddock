@@ -23,6 +23,7 @@ Back in the Windows XP days there were desktop organizers that let you draw labe
 - **Collapse areas to their title bar.** Click the title to roll an area up. Hovering a collapsed area peeks it open and it closes again when the mouse leaves.
 - **Folder portals.** An area can show any existing folder, such as Downloads or a project folder, and you can browse into subfolders inside it.
 - **Real Explorer behaviour.** Double-click opens, right-click shows the real Explorer context menu (*Send to*, *Open with*, 7-Zip …), and drag and drop works to and from Explorer, the desktop and other areas, including copy (Ctrl) and link (Alt). Moves can be undone with Ctrl+Z in Explorer.
+- **Keyboard like on the desktop.** Click into an area and use Del / Shift+Del, F2, Enter, Ctrl+A/C/X/V, the arrow keys and F5. The area still stays below every window.
 - **Rules.** New files on the desktop can be sorted into areas automatically by extension, kind, name pattern, regex or age. *Tidy up desktop* does it once for everything that is already there.
 - **Magnetic snapping** to screen edges and to other areas. Hold Alt to place freely.
 - **Themes and colours.** It ships with five themes (acrylic, blur and solid). Any area can get its own tint, and themes are small JSON files that reload live.

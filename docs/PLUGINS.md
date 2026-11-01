@@ -72,6 +72,7 @@ A complete example covering all three extension points lives in [`plugins/Paddoc
 ## Guidelines
 
 - `Initialize` and every command run on the UI thread. Keep them quick and move long work to `Task.Run`.
+- Give `IRuleCondition.Choices` a list of values if your condition only accepts a fixed set. The rule editor then shows a dropdown instead of a text field.
 - `IRuleCondition.Matches` runs for every new desktop file. It must be fast and must not show any UI.
 - Exceptions from commands are caught, logged and shown as a tray notification. They do not crash Paddock.
 - Keep the plugin `Id` stable, because rules and the list of disabled plugins refer to it.
