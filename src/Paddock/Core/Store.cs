@@ -10,18 +10,21 @@ public static class AppPaths
     /// Datenordner. Reihenfolge: Umgebungsvariable PADDOCK_DATA → portabler Modus (Ordner "data" neben der Exe)
     /// → %APPDATA%\Paddock.
     /// </summary>
-    public static string Roaming { get; } = Ensure(PortableRoot ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Paddock"));
-    public static string Local { get; } = Ensure(PortableRoot is { } p ? Path.Combine(p, "local") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Paddock"));
-    public static bool IsPortable => PortableRoot is not null;
+    public static string Roaming { get; } = Ensure(CustomRoot ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Paddock"));
+    public static string Local { get; } = Ensure(CustomRoot is { } p ? Path.Combine(p, "local") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Paddock"));
 
-    static string? PortableRoot
+    /// <summary>Portabel = "data"-Ordner neben der Exe. Ein per PADDOCK_DATA umgelenkter Datenordner zählt nicht dazu.</summary>
+    public static bool IsPortable => Directory.Exists(PortableDataDir);
+
+    static string PortableDataDir => Path.Combine(AppContext.BaseDirectory, "data");
+
+    static string? CustomRoot
     {
         get
         {
             var env = Environment.GetEnvironmentVariable("PADDOCK_DATA");
             if (!string.IsNullOrWhiteSpace(env)) return env;
-            var local = Path.Combine(AppContext.BaseDirectory, "data");
-            return Directory.Exists(local) ? local : null;
+            return IsPortable ? PortableDataDir : null;
         }
     }
     public static string Config => Path.Combine(Roaming, "config.json");
