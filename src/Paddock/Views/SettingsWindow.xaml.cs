@@ -131,19 +131,66 @@ public partial class SettingsWindow : Window
     void BuildRules()
     {
         var fences = _host.Fences.Windows.Select(w => new FenceOption(w.Id, w.Config.Title)).ToList();
+        var desktop = DesktopSnapshot();
         _rules.Clear();
-        foreach (var r in _host.Settings.Rules) _rules.Add(new RuleRow(r, _host, fences));
+        var list = _host.Settings.Rules;
+        for (int i = 0; i < list.Count; i++)
+            _rules.Add(new RuleRow(list[i], _host, fences, desktop) { Number = i + 1, CanMoveUp = i > 0, CanMoveDown = i < list.Count - 1 });
         RuleList.ItemsSource = _rules;
         NoFencesHint.Visibility = fences.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         AddRuleButton.IsEnabled = fences.Count > 0;
+        RulesEmpty.Visibility = list.Count == 0 && fences.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        BuildRuleTemplates(fences);
+    }
+
+    /// <summary>Aktueller Desktop-Inhalt für die Live-Vorschau der Regeln (einmal pro Aufbau gelesen).</summary>
+    static IReadOnlyList<ItemInfo> DesktopSnapshot()
+    {
+        try
+        {
+            return Directory.EnumerateFileSystemEntries(DesktopShell.UserDesktop)
+                .Where(p => !File.GetAttributes(p).HasFlag(FileAttributes.Hidden) && !File.GetAttributes(p).HasFlag(FileAttributes.System))
+                .Select(ItemInfo.From).ToList();
+        }
+        catch { return []; }
+    }
+
+    /// <summary>Schnellvorlagen für den leeren Zustand – Ziel ist ein passend benannter Bereich, sonst der erste.</summary>
+    void BuildRuleTemplates(IReadOnlyList<FenceOption> fences)
+    {
+        RuleTemplates.Children.Clear();
+        (string Label, string Condition, string Parameter, string[] FenceHints)[] templates =
+        [
+            ("Programme & Verknüpfungen", "kind", FileKinds.App, ["programm", "app", "spiel"]),
+            ("Bilder", "kind", FileKinds.Image, ["bild", "foto"]),
+            ("Dokumente", "kind", FileKinds.Document, ["dokument", "office"]),
+            ("PDFs", "extension", ".pdf", ["dokument", "pdf"]),
+            ("Screenshots", "name", "*screenshot*, Bildschirmfoto*", ["screenshot", "bild"]),
+            ("Archive (ZIP, 7z …)", "kind", FileKinds.Archive, ["archiv", "download"]),
+        ];
+        foreach (var t in templates)
+        {
+            var b = new Button { Content = "+  " + t.Label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 6, 12, 6) };
+            b.SetResourceReference(StyleProperty, "P.Button");
+            b.Click += (_, _) =>
+            {
+                var target = fences.FirstOrDefault(f => t.FenceHints.Any(h => f.Title.Contains(h, StringComparison.CurrentCultureIgnoreCase)))
+                             ?? fences.FirstOrDefault();
+                if (target is not null) AddRule(t.Condition, t.Parameter, target.Id);
+            };
+            RuleTemplates.Children.Add(b);
+        }
     }
 
     void AddRule_Click(object sender, RoutedEventArgs e)
     {
         var target = _host.Fences.Windows.FirstOrDefault();
-        if (target is null) return;
-        var rule = new RuleConfig { ConditionId = "extension", Parameter = "", TargetFenceId = target.Id };
-        _host.Settings.Rules.Add(rule);
+        if (target is not null) AddRule("kind", FileKinds.Image, target.Id);
+    }
+
+    void AddRule(string condition, string parameter, Guid target)
+    {
+        _host.Settings.Rules.Add(new RuleConfig { ConditionId = condition, Parameter = parameter, TargetFenceId = target });
         _host.Settings.RulesEnabled = true;
         RulesToggle.IsChecked = true;
         _host.ApplyBehaviorSettings();
@@ -157,7 +204,21 @@ public partial class SettingsWindow : Window
         _host.Settings.Rules.Remove(row.Config);
         _host.ApplyBehaviorSettings();
         _host.Save();
-        _rules.Remove(row);
+        BuildRules();
+    }
+
+    void MoveRuleUp_Click(object sender, RoutedEventArgs e) => MoveRule(sender, -1);
+    void MoveRuleDown_Click(object sender, RoutedEventArgs e) => MoveRule(sender, +1);
+
+    void MoveRule(object sender, int delta)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not RuleRow row) return;
+        var list = _host.Settings.Rules;
+        int i = list.IndexOf(row.Config), j = i + delta;
+        if (i < 0 || j < 0 || j >= list.Count) return;
+        (list[i], list[j]) = (list[j], list[i]);
+        _host.Save();
+        BuildRules();
     }
 
     void ApplyRules_Click(object sender, RoutedEventArgs e)
@@ -262,30 +323,103 @@ public sealed class ThemeCard(Theme t, bool selected)
 
 public sealed record FenceOption(Guid Id, string Title);
 
+public enum RuleStatus { Idle, Match, Problem }
+
+/// <summary>Eine Regel im Editor – mit Live-Vorschau, wie viele Desktop-Dateien sie gerade trifft.</summary>
 public sealed class RuleRow : INotifyPropertyChanged
 {
     readonly AppHost _host;
+    readonly IReadOnlyList<ItemInfo> _desktop;
     public RuleConfig Config { get; }
     public IReadOnlyList<IRuleCondition> Conditions { get; }
     public IReadOnlyList<FenceOption> Fences { get; }
 
-    public RuleRow(RuleConfig config, AppHost host, IReadOnlyList<FenceOption> fences)
+    public int Number { get; init; }
+    public bool CanMoveUp { get; init; }
+    public bool CanMoveDown { get; init; }
+
+    public RuleRow(RuleConfig config, AppHost host, IReadOnlyList<FenceOption> fences, IReadOnlyList<ItemInfo> desktop)
     {
         Config = config;
         _host = host;
+        _desktop = desktop;
         Conditions = host.Registry.Conditions;
         Fences = fences;
     }
 
+    IRuleCondition? Condition => _host.Registry.Condition(Config.ConditionId);
+
     public bool Enabled { get => Config.Enabled; set { Config.Enabled = value; Changed(); } }
-    public string ConditionId { get => Config.ConditionId; set { Config.ConditionId = value; Changed(); Raise(nameof(Hint)); } }
-    public string Parameter { get => Config.Parameter; set { Config.Parameter = value; Changed(); } }
+
+    public string ConditionId
+    {
+        get => Config.ConditionId;
+        set
+        {
+            if (Config.ConditionId == value) return;
+            Config.ConditionId = value;
+            // Wechsel auf eine Auswahl-Bedingung: ungültigen Freitext durch den ersten Wert ersetzen
+            if (Condition?.Choices is { Count: > 0 } choices && !choices.Contains(Config.Parameter)) Config.Parameter = choices[0];
+            else if (Condition?.Choices is null && Conditions.Any(c => c.Choices?.Contains(Config.Parameter) == true)) Config.Parameter = "";
+            Changed();
+            Raise(nameof(Parameter)); Raise(nameof(Choices)); Raise(nameof(HasChoices)); Raise(nameof(HasText)); Raise(nameof(Hint)); Raise(nameof(ShowHint));
+        }
+    }
+
+    public string Parameter { get => Config.Parameter; set { Config.Parameter = value ?? ""; Changed(); Raise(nameof(ShowHint)); } }
     public Guid TargetFenceId { get => Config.TargetFenceId; set { Config.TargetFenceId = value; Changed(); } }
-    public string Hint => _host.Registry.Condition(Config.ConditionId)?.ParameterHint ?? "";
+
+    public IReadOnlyList<string>? Choices => Condition?.Choices;
+    public bool HasChoices => Choices is { Count: > 0 };
+    public bool HasText => !HasChoices;
+    public string Hint => Condition?.ParameterHint ?? "";
+    public bool ShowHint => HasText && string.IsNullOrEmpty(Config.Parameter);
+
+    // ---- Live-Vorschau
+    IReadOnlyList<ItemInfo> Matches()
+    {
+        var cond = Condition;
+        if (cond is null || string.IsNullOrWhiteSpace(Config.Parameter)) return [];
+        try { return _desktop.Where(i => cond.Matches(i, Config.Parameter)).ToList(); }
+        catch { return []; }
+    }
+
+    public RuleStatus Status =>
+        Condition is null || string.IsNullOrWhiteSpace(Config.Parameter) || Fences.All(f => f.Id != Config.TargetFenceId) ? RuleStatus.Problem
+        : Matches().Count > 0 ? RuleStatus.Match : RuleStatus.Idle;
+
+    public string StatusText
+    {
+        get
+        {
+            if (Condition is null) return "Bedingung nicht verfügbar (Plugin fehlt?)";
+            if (string.IsNullOrWhiteSpace(Config.Parameter)) return "Wert fehlt";
+            if (Fences.All(f => f.Id != Config.TargetFenceId)) return "Ziel-Bereich fehlt";
+            int n = Matches().Count;
+            return n switch
+            {
+                0 => "Trifft gerade nichts",
+                1 => "Trifft gerade 1 Datei",
+                _ => $"Trifft gerade {n} Dateien",
+            };
+        }
+    }
+
+    public string? StatusDetails
+    {
+        get
+        {
+            var m = Matches();
+            if (m.Count == 0) return "Keine Datei auf dem Desktop passt gerade zu dieser Regel.";
+            var names = m.Take(12).Select(i => "• " + i.Name);
+            return string.Join("\n", names) + (m.Count > 12 ? $"\n… und {m.Count - 12} weitere" : "");
+        }
+    }
 
     void Changed([CallerMemberName] string? n = null)
     {
         Raise(n);
+        Raise(nameof(Status)); Raise(nameof(StatusText)); Raise(nameof(StatusDetails));
         _host.ApplyBehaviorSettings();
         _host.Save();
     }

@@ -472,6 +472,7 @@ public partial class FenceWindow : Window, IFenceInfo, INotifyPropertyChanged
     void Body_Down(object sender, MouseButtonEventArgs e)
     {
         if (IsInside<System.Windows.Controls.Primitives.ScrollBar>(e.OriginalSource)) return;
+        TakeKeyboard();
         var item = ItemFrom(e.OriginalSource);
         if (item is null)
         {
@@ -536,6 +537,7 @@ public partial class FenceWindow : Window, IFenceInfo, INotifyPropertyChanged
         var item = ItemFrom(e.OriginalSource);
         e.Handled = true;
         if (item is null) { ShowFenceMenu(); return; }
+        TakeKeyboard();
         if (!item.IsSelected) foreach (var i in _items) i.IsSelected = i == item;
         var selection = Selected;
         var paths = selection.Select(i => i.Path).ToList();
@@ -719,6 +721,106 @@ public partial class FenceWindow : Window, IFenceInfo, INotifyPropertyChanged
         return true;
     }
 
+    // ---------------------------------------------------------------- Tastatur
+    /// <summary>
+    /// Nach einem Klick in den Inhalt bekommt der Bereich die Tastatur (Entf, F2, Strg+C …),
+    /// bleibt dabei aber unter allen Fenstern (WM_WINDOWPOSCHANGING hält ihn unten).
+    /// </summary>
+    void TakeKeyboard()
+    {
+        if (TitleEdit.IsVisible) return;
+        if (!IsActive)
+        {
+            _allowActivate = true;
+            SetExStyle(_hwnd, GetExStyle(_hwnd) & ~WS_EX_NOACTIVATE);
+            ForceForeground(_hwnd);
+            base.Activate();
+        }
+        Keyboard.Focus(this);
+    }
+
+    void ReleaseKeyboard()
+    {
+        if (TitleEdit.IsVisible || _hwnd == IntPtr.Zero) return;
+        _allowActivate = false;
+        SetExStyle(_hwnd, GetExStyle(_hwnd) | WS_EX_NOACTIVATE);
+        SendToBottom();
+    }
+
+    protected override void OnPreviewKeyDown(KeyEventArgs e)
+    {
+        base.OnPreviewKeyDown(e);
+        if (TitleEdit.IsVisible || e.Handled) return;
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        var mods = Keyboard.Modifiers;
+        var selection = Selected;
+        var paths = selection.Select(i => i.Path).ToList();
+        e.Handled = true;
+
+        switch (key)
+        {
+            case Key.Delete when paths.Count > 0:
+                if (mods.HasFlag(ModifierKeys.Shift)) ShellItems.DeletePermanently(_hwnd, paths);
+                else ShellItems.Recycle(_hwnd, paths);
+                ScheduleRefresh();
+                break;
+            case Key.F2 when paths.Count == 1:
+                RenameItem(paths[0]);
+                break;
+            case Key.Enter when selection.Count > 0:
+                foreach (var item in selection.Take(15)) OpenItem(item);
+                break;
+            case Key.A when mods == ModifierKeys.Control:
+                foreach (var i in _items) i.IsSelected = true;
+                break;
+            case Key.C when mods == ModifierKeys.Control && paths.Count > 0:
+                ShellItems.SetClipboard(paths, cut: false);
+                break;
+            case Key.X when mods == ModifierKeys.Control && paths.Count > 0:
+                ShellItems.SetClipboard(paths, cut: true);
+                break;
+            case Key.V when mods == ModifierKeys.Control:
+                if (ShellItems.PasteInto(_hwnd, _currentFolder)) ScheduleRefresh();
+                break;
+            case Key.F5:
+                RefreshAppearance();
+                break;
+            case Key.Back when !PathEquals(_currentFolder, Config.FolderPath):
+                Back_Click(this, new RoutedEventArgs());
+                break;
+            case Key.Escape:
+                foreach (var i in _items) i.IsSelected = false;
+                break;
+            case Key.Left or Key.Right or Key.Up or Key.Down:
+                MoveSelection(key, mods.HasFlag(ModifierKeys.Shift));
+                break;
+            default:
+                e.Handled = false;
+                break;
+        }
+    }
+
+    /// <summary>Pfeiltasten: in der Kachelansicht zeilenweise, in der Liste nur hoch/runter.</summary>
+    void MoveSelection(Key key, bool extend)
+    {
+        if (_items.Count == 0) return;
+        int current = _anchor is not null ? _items.IndexOf(_anchor) : -1;
+        int perRow = Config.ViewMode == FenceViewMode.List ? 1 : Math.Max(1, (int)((ItemsHost.ActualWidth) / (TileWidth + 4)));
+        int next = current < 0 ? 0 : key switch
+        {
+            Key.Left => current - (perRow == 1 ? 0 : 1),
+            Key.Right => current + (perRow == 1 ? 0 : 1),
+            Key.Up => current - perRow,
+            _ => current + perRow,
+        };
+        next = Math.Clamp(next, 0, _items.Count - 1);
+        var target = _items[next];
+        if (!extend) foreach (var i in _items) i.IsSelected = i == target;
+        else target.IsSelected = true;
+        _anchor = target;
+        if (ItemsHost.ItemContainerGenerator.ContainerFromIndex(next) is FrameworkElement fe) fe.BringIntoView();
+    }
+
     // ---------------------------------------------------------------- Umbenennen des Bereichs
     public void BeginRename()
     {
@@ -753,6 +855,7 @@ public partial class FenceWindow : Window, IFenceInfo, INotifyPropertyChanged
     {
         base.OnDeactivated(e);
         if (TitleEdit.IsVisible && _renameActivated) EndRename(true);
+        else ReleaseKeyboard();
     }
 
     protected override void OnActivated(EventArgs e)

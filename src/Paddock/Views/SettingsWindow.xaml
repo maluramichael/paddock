@@ -10,6 +10,7 @@
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolVis"/>
         <Style x:Key="ToggleCard" TargetType="CheckBox" BasedOn="{StaticResource P.Toggle}">
             <Setter Property="Margin" Value="0"/>
         </Style>
@@ -241,53 +242,144 @@
                             </CheckBox>
                         </Border>
 
+                        <!-- Leerer Zustand mit Schnellvorlagen -->
+                        <Border x:Name="RulesEmpty" Style="{StaticResource P.Card}" Padding="20,18" Margin="0,8,0,6" Visibility="Collapsed">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Width="36" Height="36" CornerRadius="9" Background="{DynamicResource P.AccentSoft}" Margin="0,0,14,0">
+                                        <TextBlock Text="&#xE71C;" FontFamily="{StaticResource P.Icons}" FontSize="16" Foreground="{DynamicResource P.Accent}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Noch keine Regeln" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Leg mit einem Klick los – du kannst alles danach anpassen:" Style="{StaticResource P.Muted}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <WrapPanel x:Name="RuleTemplates" Margin="50,12,0,0"/>
+                            </StackPanel>
+                        </Border>
+
                         <ItemsControl x:Name="RuleList" Margin="0,8,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type v:RuleRow}">
-                                    <Border Style="{StaticResource P.Card}" Padding="12,10">
+                                    <Border Style="{StaticResource P.Card}" Padding="16,14">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="190"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="150"/>
-                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <CheckBox Style="{StaticResource P.Toggle}" IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Regel aktiv"/>
-                                            <ComboBox Grid.Column="1" Style="{StaticResource P.ComboBox}" ItemsSource="{Binding Conditions}"
-                                                      DisplayMemberPath="DisplayName" SelectedValuePath="Id" SelectedValue="{Binding ConditionId}"/>
-                                            <Grid Grid.Column="2" Margin="8,0">
-                                                <TextBox x:Name="Param" Style="{StaticResource P.TextBox}" Text="{Binding Parameter, UpdateSourceTrigger=PropertyChanged}"/>
-                                                <TextBlock Text="{Binding Hint}" IsHitTestVisible="False" Margin="10,0" VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource P.Ui.Muted}" Opacity="0.7" TextTrimming="CharacterEllipsis">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Parameter}" Value="">
-                                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
-                                            </Grid>
-                                            <TextBlock Grid.Column="3" Text="&#xE72A;" FontFamily="{StaticResource P.Icons}" VerticalAlignment="Center"
-                                                       Margin="0,0,8,0" Foreground="{DynamicResource P.Ui.Muted}"/>
-                                            <ComboBox Grid.Column="4" Style="{StaticResource P.ComboBox}" ItemsSource="{Binding Fences}"
-                                                      DisplayMemberPath="Title" SelectedValuePath="Id" SelectedValue="{Binding TargetFenceId}"/>
-                                            <Button Grid.Column="5" Style="{StaticResource P.IconButton}" Foreground="{DynamicResource P.Ui.Muted}"
-                                                    Content="&#xE74D;" Margin="6,0,0,0" ToolTip="Regel löschen" Click="DeleteRule_Click"/>
+
+                                            <!-- Reihenfolge -->
+                                            <Border Width="26" Height="26" CornerRadius="13" Background="{DynamicResource P.Ui.Control}"
+                                                    VerticalAlignment="Top" Margin="0,5,14,0" ToolTip="Reihenfolge – die erste passende Regel gewinnt">
+                                                <TextBlock Text="{Binding Number}" FontSize="12" FontWeight="SemiBold"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" x:Name="Body">
+                                                <!-- Wenn … -->
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="58"/>
+                                                        <ColumnDefinition Width="210"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Wenn" VerticalAlignment="Center" Foreground="{DynamicResource P.Ui.Muted}"/>
+                                                    <ComboBox Grid.Column="1" Style="{StaticResource P.ComboBox}" ItemsSource="{Binding Conditions}"
+                                                              SelectedValuePath="Id" SelectedValue="{Binding ConditionId}">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate><TextBlock Text="{Binding DisplayName}"/></DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+                                                    <Grid Grid.Column="2" Margin="8,0,0,0">
+                                                        <ComboBox Style="{StaticResource P.ComboBox}" ItemsSource="{Binding Choices}"
+                                                                  SelectedItem="{Binding Parameter}"
+                                                                  Visibility="{Binding HasChoices, Converter={StaticResource BoolVis}}"/>
+                                                        <Grid Visibility="{Binding HasText, Converter={StaticResource BoolVis}}">
+                                                            <TextBox Style="{StaticResource P.TextBox}" Text="{Binding Parameter, UpdateSourceTrigger=PropertyChanged}"/>
+                                                            <TextBlock Text="{Binding Hint}" IsHitTestVisible="False" Margin="10,0" VerticalAlignment="Center"
+                                                                       Foreground="{DynamicResource P.Ui.Muted}" Opacity="0.7" TextTrimming="CharacterEllipsis"
+                                                                       Visibility="{Binding ShowHint, Converter={StaticResource BoolVis}}"/>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+
+                                                <!-- … dann verschieben nach -->
+                                                <Grid Margin="0,8,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="58"/>
+                                                        <ColumnDefinition Width="210"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="dann in" VerticalAlignment="Center" Foreground="{DynamicResource P.Ui.Muted}"/>
+                                                    <ComboBox Grid.Column="1" Style="{StaticResource P.ComboBox}" ItemsSource="{Binding Fences}"
+                                                              SelectedValuePath="Id" SelectedValue="{Binding TargetFenceId}">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource P.Icons}" FontSize="12"
+                                                                               VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.7"/>
+                                                                    <TextBlock Text="{Binding Title}"/>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center"
+                                                                ToolTip="{Binding StatusDetails}">
+                                                        <Ellipse Width="7" Height="7" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                            <Ellipse.Style>
+                                                                <Style TargetType="Ellipse">
+                                                                    <Setter Property="Fill" Value="{DynamicResource P.Ui.Muted}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="Match">
+                                                                            <Setter Property="Fill" Value="#3DD68C"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="Problem">
+                                                                            <Setter Property="Fill" Value="#FFB454"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Ellipse.Style>
+                                                        </Ellipse>
+                                                        <TextBlock Text="{Binding StatusText}" Style="{StaticResource P.Muted}" TextWrapping="NoWrap"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+
+                                            <!-- Aktionen -->
+                                            <StackPanel Grid.Column="2" Margin="16,0,0,0" VerticalAlignment="Top">
+                                                <CheckBox Style="{StaticResource P.Toggle}" IsChecked="{Binding Enabled}" HorizontalAlignment="Right"
+                                                          Margin="0,7,0,0" ToolTip="Regel an/aus"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,10,-4,0" HorizontalAlignment="Right">
+                                                    <Button Style="{StaticResource P.IconButton}" Foreground="{DynamicResource P.Ui.Muted}" Content="&#xE74A;"
+                                                            ToolTip="Nach oben" Click="MoveRuleUp_Click" IsEnabled="{Binding CanMoveUp}"/>
+                                                    <Button Style="{StaticResource P.IconButton}" Foreground="{DynamicResource P.Ui.Muted}" Content="&#xE74B;"
+                                                            ToolTip="Nach unten" Click="MoveRuleDown_Click" IsEnabled="{Binding CanMoveDown}"/>
+                                                    <Button Style="{StaticResource P.IconButton}" Foreground="{DynamicResource P.Ui.Muted}" Content="&#xE74D;"
+                                                            ToolTip="Regel löschen" Click="DeleteRule_Click"/>
+                                                </StackPanel>
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Enabled}" Value="False">
+                                            <Setter TargetName="Body" Property="Opacity" Value="0.5"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock x:Name="NoFencesHint" Style="{StaticResource P.Muted}" Margin="2,4,0,8" Visibility="Collapsed"
                                    Text="Lege zuerst einen Bereich an – Regeln brauchen ein Ziel."/>
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <Button x:Name="AddRuleButton" Content="Regel hinzufügen" Style="{StaticResource P.AccentButton}" Click="AddRule_Click"/>
+                            <Button x:Name="AddRuleButton" Style="{StaticResource P.AccentButton}" Click="AddRule_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE710;" FontFamily="{StaticResource P.Icons}" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Regel hinzufügen"/>
+                                </StackPanel>
+                            </Button>
                             <Button Content="Jetzt auf den Desktop anwenden" Style="{StaticResource P.Button}" Margin="8,0,0,0" Click="ApplyRules_Click"/>
                         </StackPanel>
                     </StackPanel>

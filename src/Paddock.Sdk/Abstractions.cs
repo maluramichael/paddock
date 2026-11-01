@@ -83,6 +83,8 @@ public interface IRuleCondition
     string DisplayName { get; }
     /// <summary>Platzhalter für das Eingabefeld, z. B. ".png, .jpg".</summary>
     string ParameterHint => "";
+    /// <summary>Feste Auswahlwerte (z. B. Dateiarten). Ist die Liste gesetzt, zeigt der Editor ein Auswahlfeld statt Freitext.</summary>
+    IReadOnlyList<string>? Choices => null;
     bool Matches(ItemInfo item, string parameter);
 }
 

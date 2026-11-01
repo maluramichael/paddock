@@ -90,18 +90,18 @@ public static class BuiltInConditions
 {
     public static readonly IRuleCondition[] All =
     [
-        new Simple("extension", "Dateiendung ist", ".png, .jpg, .pdf", (i, p) =>
+        new Simple("extension", "Dateiendung ist", "z. B. .png, .jpg, .pdf", (i, p) =>
             !i.IsDirectory && Split(p).Any(e => string.Equals(Normalize(e), i.Extension, StringComparison.OrdinalIgnoreCase))),
-        new Simple("kind", "Dateiart ist", "Programm, Ordner, Bild, Dokument, Video, Audio, Archiv, Code", (i, p) =>
-            Split(p).Any(k => string.Equals(FileKinds.Of(i), k, StringComparison.OrdinalIgnoreCase))),
-        new Simple("name", "Name passt auf Muster", "Rechnung*, *screenshot*", (i, p) =>
+        new Simple("kind", "Dateiart ist", "", (i, p) =>
+            Split(p).Any(k => string.Equals(FileKinds.Of(i), k, StringComparison.OrdinalIgnoreCase)), FileKinds.Ordered),
+        new Simple("name", "Name passt auf Muster", "z. B. Rechnung*, *screenshot*", (i, p) =>
             Split(p).Any(g => Wildcard(g).IsMatch(i.Name))),
-        new Simple("regex", "Name passt auf regulären Ausdruck", "^IMG_\\d+", (i, p) =>
+        new Simple("regex", "Name passt auf regulären Ausdruck", "z. B. ^IMG_\\d+", (i, p) =>
         {
             try { return Regex.IsMatch(i.Name, p, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(50)); }
             catch { return false; }
         }),
-        new Simple("olderThan", "Älter als (Tage)", "30", (i, p) =>
+        new Simple("olderThan", "Älter als (Tage)", "z. B. 30", (i, p) =>
             int.TryParse(p.Trim(), out var days) && i.LastWriteTime < DateTime.Now.AddDays(-days)),
     ];
 
@@ -111,11 +111,12 @@ public static class BuiltInConditions
     static Regex Wildcard(string glob) =>
         new("^" + Regex.Escape(glob).Replace("\\*", ".*").Replace("\\?", ".") + "$", RegexOptions.IgnoreCase);
 
-    sealed class Simple(string id, string name, string hint, Func<ItemInfo, string, bool> match) : IRuleCondition
+    sealed class Simple(string id, string name, string hint, Func<ItemInfo, string, bool> match, IReadOnlyList<string>? choices = null) : IRuleCondition
     {
         public string Id => id;
         public string DisplayName => name;
         public string ParameterHint => hint;
+        public IReadOnlyList<string>? Choices => choices;
         public bool Matches(ItemInfo item, string parameter) => match(item, parameter);
     }
 }

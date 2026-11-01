@@ -203,6 +203,47 @@ public static class ShellItems
     public static bool Recycle(IntPtr hwnd, IReadOnlyList<string> sources) =>
         Run(hwnd, FO_DELETE, sources, null, FOF_ALLOWUNDO);
 
+    /// <summary>Umschalt+Entf: endgültig löschen (Windows fragt wie gewohnt nach).</summary>
+    public static bool DeletePermanently(IntPtr hwnd, IReadOnlyList<string> sources) =>
+        Run(hwnd, FO_DELETE, sources, null, 0);
+
+    // --- Zwischenablage (kompatibel mit Explorer: CF_HDROP + "Preferred DropEffect") ---
+
+    const int DROPEFFECT_COPY = 1, DROPEFFECT_MOVE = 2, DROPEFFECT_LINK = 4;
+
+    public static void SetClipboard(IReadOnlyList<string> paths, bool cut)
+    {
+        var files = new System.Collections.Specialized.StringCollection();
+        files.AddRange(paths.ToArray());
+        var data = new System.Windows.DataObject();
+        data.SetFileDropList(files);
+        data.SetData("Preferred DropEffect", new MemoryStream(BitConverter.GetBytes(cut ? DROPEFFECT_MOVE : DROPEFFECT_COPY | DROPEFFECT_LINK)));
+        try { System.Windows.Clipboard.SetDataObject(data, true); }
+        catch (Exception ex) { Log.Error("Zwischenablage", ex); }
+    }
+
+    /// <summary>Fügt Dateien aus der Zwischenablage in einen Ordner ein (Ausschneiden = verschieben).</summary>
+    public static bool PasteInto(IntPtr hwnd, string folder)
+    {
+        try
+        {
+            if (!System.Windows.Clipboard.ContainsFileDropList()) return false;
+            var files = System.Windows.Clipboard.GetFileDropList().Cast<string>().ToList();
+            if (files.Count == 0) return false;
+            bool cut = System.Windows.Clipboard.GetData("Preferred DropEffect") is MemoryStream ms
+                       && ms.Length >= 4 && (BitConverter.ToInt32(ms.ToArray(), 0) & DROPEFFECT_MOVE) != 0;
+            if (!cut) return Copy(hwnd, files, folder);
+            bool ok = Move(hwnd, files, folder);
+            if (ok) System.Windows.Clipboard.Clear(); // wie im Explorer: Ausgeschnittenes ist danach weg
+            return ok;
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Einfügen", ex);
+            return false;
+        }
+    }
+
     static bool Run(IntPtr hwnd, uint func, IReadOnlyList<string> sources, string? target, ushort flags)
     {
         if (sources.Count == 0) return false;
