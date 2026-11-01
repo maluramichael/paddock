@@ -1,0 +1,364 @@
+<Window x:Class="Paddock.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:Paddock.Views"
+        Title="Paddock – Einstellungen" Width="900" Height="640" MinWidth="740" MinHeight="480"
+        WindowStartupLocation="CenterScreen" Background="Transparent"
+        FontFamily="Segoe UI Variable Text, Segoe UI" Foreground="{DynamicResource P.Ui.Foreground}">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="40" GlassFrameThickness="-1" ResizeBorderThickness="6" UseAeroCaptionButtons="True" CornerRadius="0"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <Style x:Key="ToggleCard" TargetType="CheckBox" BasedOn="{StaticResource P.Toggle}">
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style x:Key="Glyph" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource P.Icons}"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="232"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Navigation (liegt auf Mica) -->
+        <StackPanel Margin="14,10,10,14">
+            <StackPanel Orientation="Horizontal" Margin="6,2,0,22" WindowChrome.IsHitTestVisibleInChrome="False">
+                <Image Source="pack://application:,,,/Paddock;component/Assets/paddock.ico" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Text="Paddock" Margin="10,0,0,0" FontSize="13" VerticalAlignment="Center"/>
+            </StackPanel>
+            <ListBox x:Name="Nav" Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource P.NavItem}"
+                     SelectionChanged="Nav_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBoxItem Tag="General" IsSelected="True">
+                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE713;" Style="{StaticResource Glyph}"/><TextBlock Text="Allgemein"/></StackPanel>
+                </ListBoxItem>
+                <ListBoxItem Tag="Appearance">
+                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE790;" Style="{StaticResource Glyph}"/><TextBlock Text="Darstellung"/></StackPanel>
+                </ListBoxItem>
+                <ListBoxItem Tag="Rules">
+                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE71C;" Style="{StaticResource Glyph}"/><TextBlock Text="Regeln"/></StackPanel>
+                </ListBoxItem>
+                <ListBoxItem Tag="Plugins">
+                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xEA86;" Style="{StaticResource Glyph}"/><TextBlock Text="Erweiterungen"/></StackPanel>
+                </ListBoxItem>
+                <ListBoxItem Tag="About">
+                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE946;" Style="{StaticResource Glyph}"/><TextBlock Text="Info"/></StackPanel>
+                </ListBoxItem>
+            </ListBox>
+        </StackPanel>
+
+        <!-- Inhalt -->
+        <Border Grid.Column="1" Margin="0,40,0,0" CornerRadius="8,0,0,0" Background="{DynamicResource P.Ui.Card}"
+                BorderBrush="{DynamicResource P.Ui.CardBorder}" BorderThickness="1,1,0,0">
+            <ScrollViewer x:Name="PageScroller" Style="{StaticResource P.ScrollViewer}" VerticalScrollBarVisibility="Auto">
+                <Grid Margin="32,24,32,32" MaxWidth="760" HorizontalAlignment="Stretch">
+
+                    <!-- ================= Allgemein ================= -->
+                    <StackPanel x:Name="General" CheckBox.Click="Setting_Changed">
+                        <TextBlock Text="Allgemein" Style="{StaticResource P.H2}"/>
+
+                        <TextBlock Text="Start" Style="{StaticResource P.Section}" Margin="2,0,0,8"/>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox x:Name="AutostartToggle" Style="{StaticResource ToggleCard}" Click="Autostart_Click">
+                                <StackPanel>
+                                    <TextBlock Text="Mit Windows starten"/>
+                                    <TextBlock Text="Paddock startet unauffällig im Infobereich." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+
+                        <TextBlock Text="Desktop-Gesten" Style="{StaticResource P.Section}"/>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox Style="{StaticResource ToggleCard}" IsChecked="{Binding QuickHide}">
+                                <StackPanel>
+                                    <TextBlock Text="Doppelklick auf freien Desktop blendet alles aus"/>
+                                    <TextBlock Text="Noch ein Doppelklick holt alles zurück." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox Style="{StaticResource ToggleCard}" IsChecked="{Binding QuickHideNativeIcons}">
+                                <StackPanel>
+                                    <TextBlock Text="Dabei auch normale Desktop-Symbole ausblenden"/>
+                                    <TextBlock Text="Ergibt einen komplett freien Hintergrund." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox Style="{StaticResource ToggleCard}" IsChecked="{Binding DrawToCreate}">
+                                <StackPanel>
+                                    <TextBlock Text="Rechte Maustaste + Ziehen erstellt einen Bereich"/>
+                                    <TextBlock Text="Ein normaler Rechtsklick öffnet weiterhin das Desktop-Menü." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+
+                        <TextBlock Text="Bedienung" Style="{StaticResource P.Section}"/>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox Style="{StaticResource ToggleCard}" IsChecked="{Binding PeekCollapsed}">
+                                <StackPanel>
+                                    <TextBlock Text="Eingeklappte Bereiche beim Darüberfahren aufklappen"/>
+                                    <TextBlock Text="Klappen sich wieder ein, sobald die Maus geht – nimmt keinen Platz weg." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox Style="{StaticResource ToggleCard}" IsChecked="{Binding Snap}">
+                                <StackPanel>
+                                    <TextBlock Text="Magnetisch einrasten"/>
+                                    <TextBlock Text="An Bildschirmrändern und anderen Bereichen. Alt gedrückt halten zum freien Platzieren." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox Style="{StaticResource ToggleCard}" IsChecked="{Binding SingleClickOpen}">
+                                <StackPanel>
+                                    <TextBlock Text="Mit einfachem Klick öffnen"/>
+                                    <TextBlock Text="Wie ein Startmenü statt wie der Explorer." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox Style="{StaticResource ToggleCard}" IsChecked="{Binding ShowThumbnails}">
+                                <StackPanel>
+                                    <TextBlock Text="Vorschaubilder für Bilder und Videos"/>
+                                    <TextBlock Text="Aus: nur Symbole – etwas sparsamer." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox Style="{StaticResource ToggleCard}" IsChecked="{Binding ShowHiddenFiles}">
+                                <TextBlock Text="Versteckte Dateien anzeigen"/>
+                            </CheckBox>
+                        </Border>
+
+                        <TextBlock Text="Speicherort" Style="{StaticResource P.Section}"/>
+                        <Border Style="{StaticResource P.Card}">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="Öffnen" Style="{StaticResource P.Button}" Click="OpenCollections_Click"/>
+                                    <Button Content="Ändern …" Style="{StaticResource P.Button}" Margin="8,0,0,0" Click="ChangeCollections_Click"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,16,0">
+                                    <TextBlock Text="Sammelordner"/>
+                                    <TextBlock x:Name="CollectionsPath" Style="{StaticResource P.Muted}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
+                                    <TextBlock Text="Neue Bereiche legen ihre Dateien hier ab. Bestehende Bereiche bleiben, wo sie sind." Style="{StaticResource P.Muted}" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ================= Darstellung ================= -->
+                    <StackPanel x:Name="Appearance" Visibility="Collapsed">
+                        <TextBlock Text="Darstellung" Style="{StaticResource P.H2}"/>
+                        <TextBlock Text="Theme" Style="{StaticResource P.Section}" Margin="2,0,0,8"/>
+                        <ItemsControl x:Name="ThemeList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type v:ThemeCard}">
+                                    <Border x:Name="Card" Width="214" Margin="0,0,10,10" CornerRadius="10" BorderThickness="2"
+                                            BorderBrush="Transparent" Background="{DynamicResource P.Ui.Control}" Cursor="Hand"
+                                            MouseLeftButtonUp="ThemeCard_Click" Padding="6">
+                                        <StackPanel>
+                                            <!-- Mini-Vorschau: ein Bereich auf einem Hintergrund -->
+                                            <Border Height="104" CornerRadius="6" ClipToBounds="True">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                        <GradientStop Color="#5B6CFF" Offset="0"/>
+                                                        <GradientStop Color="#C04FD8" Offset="0.55"/>
+                                                        <GradientStop Color="#FFB86B" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                                <Border Margin="18,14,18,14" CornerRadius="{Binding Radius}" Background="{Binding Tint}"
+                                                        BorderBrush="{Binding Border}" BorderThickness="1">
+                                                    <StackPanel>
+                                                        <Border Height="20" Background="{Binding TitleBackground}" CornerRadius="{Binding Radius}">
+                                                            <TextBlock Text="{Binding TitleSample}" FontSize="10" FontWeight="SemiBold" Margin="8,0"
+                                                                       VerticalAlignment="Center" HorizontalAlignment="{Binding TitleAlignment}"
+                                                                       Foreground="{Binding TitleForeground}"/>
+                                                        </Border>
+                                                        <StackPanel Orientation="Horizontal" Margin="8,8,0,0">
+                                                            <Border Width="18" Height="18" CornerRadius="4" Background="{Binding Accent}" Margin="0,0,10,0"/>
+                                                            <Border Width="18" Height="18" CornerRadius="4" Background="{Binding ItemForeground}" Opacity="0.75" Margin="0,0,10,0"/>
+                                                            <Border Width="18" Height="18" CornerRadius="4" Background="{Binding ItemForeground}" Opacity="0.45"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </Border>
+                                            <TextBlock Text="{Binding Name}" Margin="4,8,4,0" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Description}" Margin="4,2,4,4" Style="{StaticResource P.Muted}" Height="32"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource P.Accent}"/>
+                                        </DataTrigger>
+                                        <Trigger SourceName="Card" Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Card" Property="Background" Value="{DynamicResource P.Ui.ControlHover}"/>
+                                        </Trigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Eigene Themes" Style="{StaticResource P.Section}"/>
+                        <Border Style="{StaticResource P.Card}">
+                            <StackPanel>
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource P.Muted}" FontSize="13" LineHeight="20">
+                                    Themes sind kleine JSON-Dateien: Farben, Glas-Effekt, Ecken, Schriften. Gespeicherte Änderungen
+                                    erscheinen sofort – ohne Neustart. Für tiefe Eingriffe kann ein Theme zusätzlich ein
+                                    XAML-ResourceDictionary einbinden.
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Button Content="Aktuelles Theme als Vorlage kopieren" Style="{StaticResource P.AccentButton}" Click="ExportTheme_Click"/>
+                                    <Button Content="Theme-Ordner öffnen" Style="{StaticResource P.Button}" Margin="8,0,0,0" Click="OpenThemes_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ================= Regeln ================= -->
+                    <StackPanel x:Name="Rules" Visibility="Collapsed">
+                        <TextBlock Text="Regeln" Style="{StaticResource P.H2}"/>
+                        <TextBlock Style="{StaticResource P.Muted}" FontSize="13" Margin="2,-6,0,14">
+                            Neue Dateien auf dem Desktop landen automatisch im passenden Bereich. Die erste passende Regel gewinnt.
+                        </TextBlock>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox x:Name="RulesToggle" Style="{StaticResource ToggleCard}" IsChecked="{Binding RulesEnabled}" Click="Setting_Changed">
+                                <StackPanel>
+                                    <TextBlock Text="Neue Desktop-Dateien automatisch einsortieren"/>
+                                    <TextBlock Text="Dateien, die du selbst aus einem Bereich auf den Desktop ziehst, bleiben dort." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+
+                        <ItemsControl x:Name="RuleList" Margin="0,8,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type v:RuleRow}">
+                                    <Border Style="{StaticResource P.Card}" Padding="12,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="190"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox Style="{StaticResource P.Toggle}" IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Regel aktiv"/>
+                                            <ComboBox Grid.Column="1" Style="{StaticResource P.ComboBox}" ItemsSource="{Binding Conditions}"
+                                                      DisplayMemberPath="DisplayName" SelectedValuePath="Id" SelectedValue="{Binding ConditionId}"/>
+                                            <Grid Grid.Column="2" Margin="8,0">
+                                                <TextBox x:Name="Param" Style="{StaticResource P.TextBox}" Text="{Binding Parameter, UpdateSourceTrigger=PropertyChanged}"/>
+                                                <TextBlock Text="{Binding Hint}" IsHitTestVisible="False" Margin="10,0" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource P.Ui.Muted}" Opacity="0.7" TextTrimming="CharacterEllipsis">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Parameter}" Value="">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                            <TextBlock Grid.Column="3" Text="&#xE72A;" FontFamily="{StaticResource P.Icons}" VerticalAlignment="Center"
+                                                       Margin="0,0,8,0" Foreground="{DynamicResource P.Ui.Muted}"/>
+                                            <ComboBox Grid.Column="4" Style="{StaticResource P.ComboBox}" ItemsSource="{Binding Fences}"
+                                                      DisplayMemberPath="Title" SelectedValuePath="Id" SelectedValue="{Binding TargetFenceId}"/>
+                                            <Button Grid.Column="5" Style="{StaticResource P.IconButton}" Foreground="{DynamicResource P.Ui.Muted}"
+                                                    Content="&#xE74D;" Margin="6,0,0,0" ToolTip="Regel löschen" Click="DeleteRule_Click"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="NoFencesHint" Style="{StaticResource P.Muted}" Margin="2,4,0,8" Visibility="Collapsed"
+                                   Text="Lege zuerst einen Bereich an – Regeln brauchen ein Ziel."/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button x:Name="AddRuleButton" Content="Regel hinzufügen" Style="{StaticResource P.AccentButton}" Click="AddRule_Click"/>
+                            <Button Content="Jetzt auf den Desktop anwenden" Style="{StaticResource P.Button}" Margin="8,0,0,0" Click="ApplyRules_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- ================= Erweiterungen ================= -->
+                    <StackPanel x:Name="Plugins" Visibility="Collapsed">
+                        <TextBlock Text="Erweiterungen" Style="{StaticResource P.H2}"/>
+                        <TextBlock Style="{StaticResource P.Muted}" FontSize="13" Margin="2,-6,0,14" LineHeight="20">
+                            Plugins sind .NET-Bibliotheken, die eigene Regeln und Menübefehle beisteuern. Lege sie in einen
+                            Unterordner des Plugin-Ordners. Änderungen gelten nach einem Neustart.
+                        </TextBlock>
+                        <ItemsControl x:Name="PluginList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type v:PluginRow}">
+                                    <Border Style="{StaticResource P.Card}">
+                                        <CheckBox Style="{StaticResource P.Toggle}" IsChecked="{Binding Enabled}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}"/>
+                                                <TextBlock Text="{Binding Description}" Style="{StaticResource P.Muted}"/>
+                                                <TextBlock Text="{Binding Details}" Style="{StaticResource P.Muted}" Opacity="0.7" FontSize="11" Margin="0,2,0,0"/>
+                                                <TextBlock Text="{Binding Error}" Foreground="#FF6B6B" FontSize="12" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </CheckBox>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="NoPlugins" Text="Noch keine Erweiterungen installiert." Style="{StaticResource P.Muted}" Margin="2,0,0,8"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Content="Plugin-Ordner öffnen" Style="{StaticResource P.Button}" Click="OpenPlugins_Click"/>
+                            <Button Content="Jetzt neu starten" Style="{StaticResource P.Button}" Margin="8,0,0,0" Click="Restart_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- ================= Info ================= -->
+                    <StackPanel x:Name="About" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
+                            <Image Source="pack://application:,,,/Paddock;component/Assets/paddock.ico" Width="56" Height="56" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Paddock" FontSize="26" FontWeight="SemiBold" FontFamily="Segoe UI Variable Display, Segoe UI"/>
+                                <TextBlock x:Name="VersionText" Style="{StaticResource P.Muted}" FontSize="13"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <TextBlock TextWrapping="Wrap" Style="{StaticResource P.Muted}" FontSize="13" LineHeight="20" Margin="0,0,0,16">
+                            Desktop-Bereiche für Windows 10 und 11 – eine moderne Neuinterpretation der Desktop-Organizer aus der
+                            Windows-XP-Zeit. Leichtgewichtig, ereignisgesteuert, erweiterbar.
+                        </TextBlock>
+
+                        <TextBlock Text="Ressourcen" Style="{StaticResource P.Section}"/>
+                        <Border Style="{StaticResource P.Card}">
+                            <TextBlock x:Name="StatsText" TextWrapping="Wrap" FontSize="13" LineHeight="20"/>
+                        </Border>
+
+                        <TextBlock Text="Gesten &amp; Kürzel" Style="{StaticResource P.Section}"/>
+                        <Border Style="{StaticResource P.Card}">
+                            <Grid x:Name="Cheats">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="250"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Content="Projekt auf GitHub" Style="{StaticResource P.Button}" Click="GitHub_Click"/>
+                            <Button Content="Konfigurationsordner" Style="{StaticResource P.Button}" Margin="8,0,0,0" Click="OpenConfig_Click"/>
+                            <Button Content="Protokoll" Style="{StaticResource P.Button}" Margin="8,0,0,0" Click="OpenLog_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]   # main wird vom Release-Workflow gebaut
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, test & package
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Build (warnings as errors)
+        run: dotnet build Paddock.sln -c Release -warnaserror --nologo
+
+      - name: Full build (tests, publish, plugin, MSI, ZIP)
+        shell: pwsh
+        run: ./build/build.ps1 -Version "0.0.0-ci.${{ github.run_number }}"
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: paddock-ci-${{ github.run_number }}
+          path: |
+            artifacts/*.msi
+            artifacts/*.zip
+          retention-days: 14

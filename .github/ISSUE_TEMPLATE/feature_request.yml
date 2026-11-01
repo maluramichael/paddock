@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest an idea or improvement for Paddock.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Paddock's goal is a tidy desktop that never gets in the way, so please describe the problem first and the solution second.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is annoying or missing today? When do you run into it?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like it to work?
+    validations:
+      required: true
+  - type: dropdown
+    id: fit
+    attributes:
+      label: Could this be a plugin or theme?
+      description: See docs/PLUGINS.md and docs/THEMES.md.
+      options:
+        - I am not sure
+        - Probably needs a change in Paddock itself
+        - Could be a plugin
+        - Could be a theme
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you use today or other approaches you thought about.
+    validations:
+      required: false
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would like to implement this myself
+          required: false

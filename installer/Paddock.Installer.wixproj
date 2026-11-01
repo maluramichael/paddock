@@ -1,0 +1,19 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <!--
+    Baut das MSI aus einem fertigen Publish-Ordner.
+    dotnet build installer/Paddock.Installer.wixproj -c Release -p:Version=1.2.3 -p:PublishDir=<pfad>\
+  -->
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <OutputName>Paddock-$(Version)-x64</OutputName>
+    <PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildThisFileDirectory)..\artifacts\publish\</PublishDir>
+    <DefineConstants>ProductVersion=$(Version);PublishDir=$(PublishDir)</DefineConstants>
+    <Cultures>de-DE</Cultures>
+    <!-- ICE69: Startmenü-Verknüpfung zeigt auf die Exe einer anderen Komponente derselben Feature – gewollt und harmlos -->
+    <SuppressIces>ICE69</SuppressIces>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+  </ItemGroup>
+</Project>

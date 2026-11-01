@@ -1,0 +1,24 @@
+{
+  // Minimal: fast unsichtbar, bis man mit der Maus darüberfährt
+  "name": "Klar",
+  "description": "Minimalistisch: nur Unschärfe, kein Rahmen, keine Titelleiste.",
+  "dark": true,
+  "backdrop": "blur",
+  "corners": "round",
+  "tint": "#000000",
+  "tintOpacity": 0.12,
+  "border": "#00000000",
+  "accent": "#FFFFFF",
+  "title": {
+    "foreground": "#FFFFFF",
+    "background": "#00000000",
+    "fontSize": 12,
+    "height": 30
+  },
+  "item": {
+    "foreground": "#FFFFFF",
+    "hover": "#1FFFFFFF",
+    "selected": "#33FFFFFF",
+    "selectedBorder": "#80FFFFFF"
+  }
+}

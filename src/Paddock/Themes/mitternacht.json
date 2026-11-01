@@ -1,0 +1,38 @@
+{
+  // Standard-Theme: dunkles Acrylglas mit kühlem Indigo-Akzent
+  "name": "Mitternacht",
+  "description": "Dunkles Acrylglas, dezent und gut lesbar.",
+  "dark": true,
+  "backdrop": "acrylic",
+  "corners": "round",
+  "tint": "#141824",
+  "tintOpacity": 0.42,
+  "border": "#2AFFFFFF",
+  "accent": "#7C8CFF",
+  "fontFamily": "Segoe UI Variable Text, Segoe UI",
+  "title": {
+    "fontFamily": "Segoe UI Variable Display, Segoe UI",
+    "fontSize": 13,
+    "fontWeight": "SemiBold",
+    "foreground": "#F3F5FA",
+    "background": "#10FFFFFF",
+    "height": 34,
+    "alignment": "left",
+    "uppercase": false
+  },
+  "item": {
+    "fontSize": 12,
+    "foreground": "#EDEFF5",
+    "hover": "#17FFFFFF",
+    "selected": "#337C8CFF",
+    "selectedBorder": "#997C8CFF",
+    "spacing": 4
+  },
+  "menu": {
+    "background": "#F51B1F29",
+    "foreground": "#F3F5FA",
+    "muted": "#9AA3B5",
+    "hover": "#1FFFFFFF",
+    "border": "#2EFFFFFF"
+  }
+}

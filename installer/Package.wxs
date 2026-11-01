@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MSI für Paddock. Installiert nach "C:\Program Files\Paddock", legt eine Startmenü-Verknüpfung an,
+  schließt eine laufende Instanz bei Updates und startet Paddock nach der Installation.
+  Upgrades: gleicher UpgradeCode + höhere Version → MajorUpgrade ersetzt die alte Version.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <Package Name="Paddock"
+           Manufacturer="Michael Malura"
+           Version="$(var.ProductVersion)"
+           UpgradeCode="73e00459-4345-4407-aac0-fcad302cbb0a"
+           Scope="perMachine"
+           Compressed="yes"
+           Language="1031">
+
+    <SummaryInformation Description="Paddock – Desktop-Bereiche für Windows" />
+
+    <MajorUpgrade DowngradeErrorMessage="Eine neuere Version von Paddock ist bereits installiert."
+                  Schedule="afterInstallInitialize" />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="PaddockIcon" SourceFile="$(var.PublishDir)Paddock.exe" />
+    <Property Id="ARPPRODUCTICON" Value="PaddockIcon" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/maluramichael/paddock" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/maluramichael/paddock/issues" />
+    <Property Id="ARPCONTACT" Value="Michael Malura" />
+
+    <!-- Laufendes Paddock vor dem Ersetzen der Dateien beenden -->
+    <util:CloseApplication Id="ClosePaddock" Target="Paddock.exe" CloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Paddock" />
+    </StandardDirectory>
+
+    <Feature Id="Main" Title="Paddock" Level="1">
+      <Component Id="MainExecutable" Directory="INSTALLFOLDER">
+        <File Id="PaddockExe" Source="$(var.PublishDir)Paddock.exe" KeyPath="yes" />
+      </Component>
+
+      <!-- Alle übrigen Dateien aus dem Publish-Ordner (Runtime, Plugins) -->
+      <Files Directory="INSTALLFOLDER" Include="$(var.PublishDir)**">
+        <Exclude Files="$(var.PublishDir)Paddock.exe" />
+        <Exclude Files="$(var.PublishDir)**\*.pdb" />
+      </Files>
+
+      <Component Id="StartMenuShortcut" Directory="ProgramMenuFolder" Guid="b6c3c1f0-4d61-4a3c-9e7a-2b6a0c9f1d55">
+        <Shortcut Id="PaddockStartMenu" Name="Paddock" Description="Desktop-Bereiche für Windows"
+                  Target="[#PaddockExe]" WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKCU" Key="Software\Paddock" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </Feature>
+
+    <!-- Nach Installation/Update starten (nicht bei stiller Installation oder Deinstallation) -->
+    <Property Id="WixShellExecTarget" Value="[#PaddockExe]" />
+    <CustomAction Id="LaunchPaddock" DllEntry="WixShellExec" Impersonate="yes" Return="ignore"
+                  BinaryRef="Wix4UtilCA_X64" />
+    <InstallExecuteSequence>
+      <Custom Action="LaunchPaddock" After="InstallFinalize" Condition="NOT (REMOVE~=&quot;ALL&quot;) AND UILevel &gt; 2" />
+    </InstallExecuteSequence>
+  </Package>
+</Wix>

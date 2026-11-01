@@ -1,0 +1,30 @@
+{
+  "name": "Aurora",
+  "description": "Violett getöntes Glas mit leuchtendem Türkis-Akzent.",
+  "dark": true,
+  "backdrop": "acrylic",
+  "corners": "round",
+  "tint": "#2A1748",
+  "tintOpacity": 0.38,
+  "border": "#4D9F7BFF",
+  "accent": "#3DE0C8",
+  "title": {
+    "foreground": "#F7F2FF",
+    "background": "#1A9F7BFF",
+    "alignment": "center",
+    "fontWeight": "Bold"
+  },
+  "item": {
+    "foreground": "#F4EEFF",
+    "hover": "#1FFFFFFF",
+    "selected": "#403DE0C8",
+    "selectedBorder": "#B33DE0C8"
+  },
+  "menu": {
+    "background": "#F5241536",
+    "foreground": "#F7F2FF",
+    "muted": "#B3A6CC",
+    "hover": "#269F7BFF",
+    "border": "#4D9F7BFF"
+  }
+}

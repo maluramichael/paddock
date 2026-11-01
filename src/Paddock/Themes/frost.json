@@ -1,0 +1,29 @@
+{
+  "name": "Frost",
+  "description": "Helles, luftiges Milchglas für helle Hintergründe.",
+  "dark": false,
+  "backdrop": "acrylic",
+  "corners": "round",
+  "tint": "#F4F6FB",
+  "tintOpacity": 0.55,
+  "border": "#40FFFFFF",
+  "accent": "#2F6BFF",
+  "title": {
+    "foreground": "#1A1D24",
+    "background": "#33FFFFFF",
+    "fontWeight": "SemiBold"
+  },
+  "item": {
+    "foreground": "#15171C",
+    "hover": "#26FFFFFF",
+    "selected": "#332F6BFF",
+    "selectedBorder": "#992F6BFF"
+  },
+  "menu": {
+    "background": "#F7FAFBFE",
+    "foreground": "#16181D",
+    "muted": "#5B6272",
+    "hover": "#120A1E50",
+    "border": "#1F000000"
+  }
+}

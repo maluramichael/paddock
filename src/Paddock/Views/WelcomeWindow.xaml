@@ -1,0 +1,92 @@
+<Window x:Class="Paddock.Views.WelcomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Willkommen bei Paddock" Width="600" SizeToContent="Height" WindowStartupLocation="CenterScreen"
+        WindowStyle="None" ResizeMode="NoResize" Background="Transparent" Topmost="True"
+        FontFamily="Segoe UI Variable Text, Segoe UI">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="48" GlassFrameThickness="0" ResizeBorderThickness="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <Style x:Key="Tip" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource P.Ui.Card}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource P.Ui.CardBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style x:Key="TipIcon" TargetType="Border">
+            <Setter Property="Width" Value="38"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Background" Value="{DynamicResource P.AccentSoft}"/>
+            <Setter Property="Margin" Value="0,0,14,0"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="{DynamicResource P.Ui.Background}" Padding="32,28,32,26">
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Image Source="pack://application:,,,/Paddock;component/Assets/paddock.ico" Width="44" Height="44"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Willkommen bei Paddock" FontSize="24" FontWeight="SemiBold"
+                               FontFamily="Segoe UI Variable Display, Segoe UI" Foreground="{DynamicResource P.Ui.Foreground}"/>
+                    <TextBlock Text="Ordnung auf dem Desktop – ohne dass sie im Weg ist." FontSize="13" Margin="0,2,0,0"
+                               Foreground="{DynamicResource P.Ui.Muted}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <TextBlock Margin="0,22,0,12" TextWrapping="Wrap" FontSize="13" LineHeight="20" Foreground="{DynamicResource P.Ui.Muted}">
+                Bereiche sind halbtransparente Flächen direkt auf deinem Desktop. Sie sammeln Verknüpfungen und Dateien,
+                lassen sich einklappen und verschwinden mit einem Doppelklick. So geht's:
+            </TextBlock>
+
+            <Border Style="{StaticResource Tip}">
+                <DockPanel>
+                    <Border Style="{StaticResource TipIcon}">
+                        <TextBlock Text="&#xE7C2;" FontFamily="{StaticResource P.Icons}" FontSize="17" Foreground="{DynamicResource P.Accent}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel>
+                        <TextBlock Text="Rechte Maustaste gedrückt halten und auf dem Desktop ziehen" FontWeight="SemiBold" Foreground="{DynamicResource P.Ui.Foreground}"/>
+                        <TextBlock Text="…zeichnet einen neuen Bereich. Desktop-Symbole darunter wandern gleich mit hinein." Style="{StaticResource P.Muted}" Margin="0,3,0,0"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+            <Border Style="{StaticResource Tip}">
+                <DockPanel>
+                    <Border Style="{StaticResource TipIcon}">
+                        <TextBlock Text="&#xE7B3;" FontFamily="{StaticResource P.Icons}" FontSize="17" Foreground="{DynamicResource P.Accent}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel>
+                        <TextBlock Text="Doppelklick auf eine freie Stelle des Desktops" FontWeight="SemiBold" Foreground="{DynamicResource P.Ui.Foreground}"/>
+                        <TextBlock Text="…blendet alle Bereiche und Symbole aus – und wieder ein. Perfekt für ein freies Hintergrundbild." Style="{StaticResource P.Muted}" Margin="0,3,0,0"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+            <Border Style="{StaticResource Tip}">
+                <DockPanel>
+                    <Border Style="{StaticResource TipIcon}">
+                        <TextBlock Text="&#xE70E;" FontFamily="{StaticResource P.Icons}" FontSize="17" Foreground="{DynamicResource P.Accent}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel>
+                        <TextBlock Text="Titel anklicken, ziehen oder rechts anklicken" FontWeight="SemiBold" Foreground="{DynamicResource P.Ui.Foreground}"/>
+                        <TextBlock Text="Klick klappt den Bereich ein, Ziehen verschiebt ihn (rastet magnetisch ein, Alt hält dagegen), Rechtsklick öffnet Farbe, Ansicht &amp; Co." Style="{StaticResource P.Muted}" Margin="0,3,0,0"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <DockPanel Margin="0,18,0,0" LastChildFill="False">
+                <Button DockPanel.Dock="Left" Content="Erst mal umsehen" Style="{StaticResource P.Button}" Click="Later_Click"/>
+                <Button DockPanel.Dock="Right" Content="Desktop aufräumen" Style="{StaticResource P.AccentButton}" Margin="8,0,0,0" Click="Organize_Click"/>
+                <Button DockPanel.Dock="Right" Content="Leeren Bereich anlegen" Style="{StaticResource P.Button}" Click="Empty_Click"/>
+            </DockPanel>
+        </StackPanel>
+    </Border>
+</Window>

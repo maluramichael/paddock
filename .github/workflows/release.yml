@@ -1,0 +1,87 @@
+name: Release
+
+# Jeder Push auf main erzeugt automatisch ein Release mit MSI.
+# Version aus Conventional Commits: fix/… → patch, feat → minor, feat!/BREAKING CHANGE → major (selten).
+# Manuell startbar, um den Sprung zu erzwingen.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - '.github/FUNDING.yml'
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Versionssprung
+        type: choice
+        options: [auto, patch, minor, major]
+        default: auto
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Version, build & publish
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Tags + Historie für die Versionsberechnung
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Determine next version
+        id: version
+        shell: pwsh
+        run: ./build/next-version.ps1 -Bump "${{ github.event.inputs.bump || 'auto' }}"
+
+      - name: Build (warnings as errors)
+        if: steps.version.outputs.skip != 'true'
+        run: dotnet build Paddock.sln -c Release -warnaserror --nologo
+
+      - name: Full build (tests, publish, plugin, MSI, ZIP)
+        if: steps.version.outputs.skip != 'true'
+        shell: pwsh
+        run: ./build/build.ps1 -Version "${{ steps.version.outputs.version }}"
+
+      - name: Tag & GitHub release
+        if: steps.version.outputs.skip != 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          PREVIOUS: ${{ steps.version.outputs.previous }}
+          BUMP: ${{ steps.version.outputs.bump }}
+        run: |
+          $tag = "v$env:VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a $tag -m "Paddock $env:VERSION"
+          git push origin $tag
+
+          $notes = @"
+          ## Download
+
+          - **Paddock-$env:VERSION-x64.msi**: installer (recommended), includes the .NET runtime
+          - **Paddock-$env:VERSION-x64-portable.zip**: portable; create a ``data`` folder next to ``Paddock.exe`` to keep settings there
+
+          Version bump: **$env:BUMP**
+
+          "@
+          # PowerShell expandiert keine Wildcards für native Programme → Dateien selbst auflösen
+          $files = Get-ChildItem artifacts -File | Where-Object { $_.Extension -in '.msi', '.zip' } | ForEach-Object FullName
+          $ghArgs = @('release', 'create', $tag) + $files + @('--title', "Paddock $env:VERSION", '--notes', $notes, '--generate-notes')
+          if ($env:PREVIOUS) { $ghArgs += @('--notes-start-tag', $env:PREVIOUS) }
+          gh @ghArgs
+          if ($LASTEXITCODE -ne 0) { throw "gh release create fehlgeschlagen" }

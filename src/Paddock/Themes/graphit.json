@@ -1,0 +1,32 @@
+{
+  // Ohne Unschärfe: die sparsamste Variante für ältere Rechner
+  "name": "Graphit",
+  "description": "Schlicht und ohne Unschärfe – besonders ressourcenschonend.",
+  "dark": true,
+  "backdrop": "solid",
+  "corners": "small",
+  "tint": "#1C1E22",
+  "tintOpacity": 0.82,
+  "border": "#1FFFFFFF",
+  "accent": "#E8B04A",
+  "title": {
+    "foreground": "#E9E6DF",
+    "background": "#0AFFFFFF",
+    "fontSize": 12,
+    "uppercase": true,
+    "height": 30
+  },
+  "item": {
+    "foreground": "#E9E6DF",
+    "hover": "#14FFFFFF",
+    "selected": "#33E8B04A",
+    "selectedBorder": "#99E8B04A"
+  },
+  "menu": {
+    "background": "#FA1E2024",
+    "foreground": "#E9E6DF",
+    "muted": "#9C988F",
+    "hover": "#1AFFFFFF",
+    "border": "#26FFFFFF"
+  }
+}
