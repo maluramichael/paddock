@@ -28,7 +28,7 @@ if ($Bump -eq 'auto') {
     if ($bodies -match '(?m)^BREAKING[ -]CHANGE:' -or ($subjects -match '^[a-z]+(\([^)]*\))?!:').Count -gt 0) { $Bump = 'major' }
     elseif (($subjects -match '^feat(\([^)]*\))?:').Count -gt 0) { $Bump = 'minor' }
     else { $Bump = 'patch' }
-    $reason = "auto → $Bump"
+    $reason = "auto: $Bump"
 }
 
 if (-not $last) {
@@ -47,4 +47,4 @@ else {
 
 $out = [ordered]@{ version = $next; previous = $previous; bump = $Bump; skip = $skip.ToString().ToLowerInvariant() }
 if ($env:GITHUB_OUTPUT) { $out.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" } | Add-Content $env:GITHUB_OUTPUT }
-Write-Host "Letzter Tag: $(if ($last) { $last } else { '(keiner)' }) · Commits: $($subjects.Count) · $reason → $next · skip=$skip"
+Write-Host "Letzter Tag: $(if ($last) { $last } else { '(keiner)' }) | Commits: $($subjects.Count) | $reason -> $next | skip=$skip"
