@@ -19,6 +19,7 @@ public sealed class AppHost : IDisposable
     public TrayIcon Tray { get; private set; } = null!;
     public FenceManager Fences { get; }
     public RuleEngine Rules { get; }
+    public Updater Updater { get; }
     DesktopGestures _gestures = null!;
     DrawPreview? _preview;
     SettingsWindow? _settingsWindow;
@@ -29,6 +30,7 @@ public sealed class AppHost : IDisposable
     {
         Fences = new FenceManager(this);
         Rules = new RuleEngine(this);
+        Updater = new Updater(this);
     }
 
     public void Start(string[] args)
@@ -62,6 +64,7 @@ public sealed class AppHost : IDisposable
             Fences.CreateFromDrawing(r);
         };
         ApplyBehaviorSettings();
+        Updater.Start();
 
         if (!Settings.FirstRunDone)
         {
@@ -85,6 +88,7 @@ public sealed class AppHost : IDisposable
         _gestures.DrawEnabled = Settings.DrawToCreate;
         _gestures.Update();
         Rules.Update();
+        Updater.SettingsChanged();
     }
 
     public static void TrimMemory()
@@ -143,6 +147,7 @@ public sealed class AppHost : IDisposable
 
         menu.Items.Add(new Separator());
         menu.Items.Add(Item("Einstellungen …", "", ShowSettings));
+        menu.Items.Add(Item("Nach Updates suchen", "", () => _ = Updater.CheckAsync(interactive: true)));
         menu.Items.Add(Item("Beenden", "", Exit));
         menu.IsOpen = true;
     }

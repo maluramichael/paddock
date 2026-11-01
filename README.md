@@ -43,7 +43,9 @@ Back in the Windows XP days there were desktop organizers that let you draw labe
 
 Download the latest **`Paddock-x.y.z-x64.msi`** from [Releases](https://github.com/maluramichael/paddock/releases/latest) and run it. The .NET runtime is included, so there is nothing else to install. Paddock starts after setup and shows a short welcome with the three gestures.
 
-There is also a **portable ZIP**. Unpack it anywhere and create an empty `data` folder next to `Paddock.exe` to keep all settings in that folder instead of `%APPDATA%`.
+**Updates install themselves.** On start, and once a day after that, Paddock checks GitHub for a new release, verifies the MSI's SHA-256 checksum and installs it. Windows asks once for administrator rights, then Paddock restarts. You can turn this off in Settings → *Allgemein* or check by hand under *Info* or from the tray menu.
+
+There is also a **portable ZIP**, which only notifies you about new versions. Unpack it anywhere and create an empty `data` folder next to `Paddock.exe` to keep all settings in that folder instead of `%APPDATA%`.
 
 Requirements: Windows 10 1903 or newer, or Windows 11 (x64). Rounded corners need Windows 11.
 

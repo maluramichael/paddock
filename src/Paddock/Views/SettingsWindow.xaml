@@ -73,6 +73,14 @@
                                 </StackPanel>
                             </CheckBox>
                         </Border>
+                        <Border Style="{StaticResource P.Card}">
+                            <CheckBox Style="{StaticResource ToggleCard}" IsChecked="{Binding AutoUpdate}">
+                                <StackPanel>
+                                    <TextBlock Text="Automatisch aktualisieren"/>
+                                    <TextBlock Text="Sucht beim Start (und einmal täglich) auf GitHub nach neuen Versionen und installiert sie. Windows fragt dabei kurz nach Administratorrechten." Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
 
                         <TextBlock Text="Desktop-Gesten" Style="{StaticResource P.Section}"/>
                         <Border Style="{StaticResource P.Card}">
@@ -427,6 +435,18 @@
                             Desktop-Bereiche für Windows 10 und 11 – eine moderne Neuinterpretation der Desktop-Organizer aus der
                             Windows-XP-Zeit. Leichtgewichtig, ereignisgesteuert, erweiterbar.
                         </TextBlock>
+
+                        <TextBlock Text="Updates" Style="{StaticResource P.Section}"/>
+                        <Border Style="{StaticResource P.Card}">
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Jetzt nach Updates suchen" Style="{StaticResource P.Button}"
+                                        VerticalAlignment="Center" Click="CheckUpdates_Click"/>
+                                <StackPanel Margin="0,0,16,0">
+                                    <TextBlock x:Name="UpdateStatus" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="UpdateDetails" Style="{StaticResource P.Muted}"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
 
                         <TextBlock Text="Ressourcen" Style="{StaticResource P.Section}"/>
                         <Border Style="{StaticResource P.Card}">

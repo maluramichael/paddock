@@ -66,6 +66,9 @@ public sealed class AppSettings
     public bool ShowHiddenFiles { get; set; }
     public bool ShowThumbnails { get; set; } = true;
     public bool RulesEnabled { get; set; } = true;
+    /// <summary>Beim Start (und danach täglich) nach neuen Releases suchen und installieren.</summary>
+    public bool AutoUpdate { get; set; } = true;
+    public DateTime? LastUpdateCheck { get; set; }
     public bool FirstRunDone { get; set; }
     public string CollectionsRoot { get; set; } =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Paddock");

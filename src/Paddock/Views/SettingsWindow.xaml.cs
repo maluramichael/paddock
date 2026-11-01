@@ -39,7 +39,12 @@ public partial class SettingsWindow : Window
             HwndSource.FromHwnd(hwnd).CompositionTarget.BackgroundColor = Colors.Transparent;
             ApplyBackdrop();
         };
-        Closed += (_, _) => ThemeManager.Instance.Changed -= OnThemeChanged;
+        _host.Updater.StatusChanged += UpdateUpdateStatus;
+        Closed += (_, _) =>
+        {
+            ThemeManager.Instance.Changed -= OnThemeChanged;
+            _host.Updater.StatusChanged -= UpdateUpdateStatus;
+        };
     }
 
     void ApplyBackdrop()
@@ -63,7 +68,7 @@ public partial class SettingsWindow : Window
         if (Nav.SelectedItem is not ListBoxItem { Tag: string tag } || General is null) return;
         foreach (var page in new FrameworkElement[] { General, Appearance, Rules, Plugins, About })
             page.Visibility = page.Name == tag ? Visibility.Visible : Visibility.Collapsed;
-        if (tag == "About") UpdateStats();
+        if (tag == "About") { UpdateStats(); UpdateUpdateStatus(); }
         if (tag == "Rules") BuildRules();
         PageScroller.ScrollToTop();
     }
@@ -281,6 +286,18 @@ public partial class SettingsWindow : Window
             Cheats.Children.Add(key); Cheats.Children.Add(val);
         }
     }
+
+    void UpdateUpdateStatus()
+    {
+        UpdateStatus.Text = string.IsNullOrEmpty(_host.Updater.Status)
+            ? $"Installiert: Version {Updater.Current.ToString(3)}"
+            : _host.Updater.Status;
+        var last = _host.Settings.LastUpdateCheck is { } t ? $"Zuletzt geprüft: {t:g}" : "Noch nicht geprüft";
+        var mode = Updater.IsInstalled ? "" : AppPaths.IsPortable ? " · Portable Version: Updates bitte manuell herunterladen" : " · Entwicklerversion: installiert wird nur über das MSI";
+        UpdateDetails.Text = last + mode;
+    }
+
+    async void CheckUpdates_Click(object sender, RoutedEventArgs e) => await _host.Updater.CheckAsync(interactive: true);
 
     void GitHub_Click(object sender, RoutedEventArgs e) =>
         Process.Start(new ProcessStartInfo("https://github.com/maluramichael/paddock") { UseShellExecute = true });

@@ -52,12 +52,12 @@
       </Component>
     </Feature>
 
-    <!-- Nach Installation/Update starten (nicht bei stiller Installation oder Deinstallation) -->
+    <!-- Nach Installation starten (nicht bei stiller Installation, Deinstallation oder NOLAUNCH=1 vom Updater) -->
     <Property Id="WixShellExecTarget" Value="[#PaddockExe]" />
     <CustomAction Id="LaunchPaddock" DllEntry="WixShellExec" Impersonate="yes" Return="ignore"
                   BinaryRef="Wix4UtilCA_X64" />
     <InstallExecuteSequence>
-      <Custom Action="LaunchPaddock" After="InstallFinalize" Condition="NOT (REMOVE~=&quot;ALL&quot;) AND UILevel &gt; 2" />
+      <Custom Action="LaunchPaddock" After="InstallFinalize" Condition="NOT (REMOVE~=&quot;ALL&quot;) AND UILevel &gt; 2 AND NOT NOLAUNCH" />
     </InstallExecuteSequence>
   </Package>
 </Wix>
