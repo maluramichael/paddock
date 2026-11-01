@@ -129,6 +129,8 @@ public sealed class ThemeManager
         r["P.Border"] = Brush(th.Border);
         r["P.AccentColor"] = ParseColor(th.Accent, Colors.SteelBlue);
         r["P.Accent"] = Brush(th.Accent);
+        // Text/Knöpfe auf Akzentflächen: hell oder dunkel je nach Helligkeit des Akzents (z. B. weißer Akzent bei „Klar“)
+        r["P.AccentForeground"] = Freeze(new SolidColorBrush(Luminance(ParseColor(th.Accent, Colors.SteelBlue)) > 0.6 ? Color.FromRgb(0x14, 0x16, 0x1C) : Colors.White));
         r["P.AccentSoft"] = Freeze(new SolidColorBrush(WithOpacity(ParseColor(th.Accent, Colors.SteelBlue), 0.22)));
         r["P.FontFamily"] = new FontFamily(th.FontFamily);
         r["P.CornerRadius"] = new CornerRadius(th.Corners switch { CornerKind.Round => 8, CornerKind.Small => 4, _ => 0 });
@@ -223,6 +225,9 @@ public sealed class ThemeManager
         if (string.IsNullOrWhiteSpace(s)) return fallback;
         try { return (Color)ColorConverter.ConvertFromString(s.Trim()); } catch { return fallback; }
     }
+
+    /// <summary>Relative Helligkeit 0..1 (sRGB, vereinfacht).</summary>
+    public static double Luminance(Color c) => (0.2126 * c.R + 0.7152 * c.G + 0.0722 * c.B) / 255.0;
 
     public static Color WithOpacity(Color c, double opacity) => Color.FromArgb((byte)Math.Clamp(opacity * 255, 0, 255), c.R, c.G, c.B);
 

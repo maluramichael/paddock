@@ -197,7 +197,7 @@
     <Style x:Key="P.AccentButton" TargetType="Button" BasedOn="{StaticResource P.Button}">
         <Setter Property="Background" Value="{DynamicResource P.Accent}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Foreground" Value="{DynamicResource P.AccentForeground}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -294,7 +294,7 @@
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Track" Property="Background" Value="{DynamicResource P.Accent}"/>
                             <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource P.Accent}"/>
-                            <Setter TargetName="Knob" Property="Fill" Value="White"/>
+                            <Setter TargetName="Knob" Property="Fill" Value="{DynamicResource P.AccentForeground}"/>
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
